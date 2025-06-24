@@ -1,0 +1,12 @@
+[package]
+name = "flow4"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+hex = "0.4.3"
+hsv = "0.1.1"
+pixels = "0.13"
+rand = "0.9.1"
+winit="0.28"
+winit_input_helper = "0.14"
