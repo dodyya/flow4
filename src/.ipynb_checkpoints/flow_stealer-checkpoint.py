@@ -7,7 +7,7 @@ from io import BytesIO
 url = "https://flowfreesolutions.com/solution-pictures/flow/regular/flow-regular-"
 url="https://flowfreesolutions.com/solution-pictures/flow/rectangle/flow-rectangle-"
 url_end = ".png"
-(cols, rows) = 12,14
+(cols, rows) = 14,12
 
 def steal_flow(url):
     response = requests.get(url)
@@ -60,9 +60,9 @@ def steal_flow(url):
 
 
 if __name__ == "__main__":
-    for i in range(121,151):
+    for i in range(120,151):
         print(f"Stealing image {i}...")
         flow = steal_flow(url + str(i) + url_end)
         # Save string to new file
-        with open(f"flows/{cols}x{rows}_{i}.txt", "w") as f:
+        with open(f"flows/{rows}x{cols}_{i}.txt", "w") as f:
             f.write(flow)

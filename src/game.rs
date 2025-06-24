@@ -1,3 +1,5 @@
+use crate::COLS;
+use crate::ROWS;
 use crate::board::{
     Board, Cell, ind, is_legal, is_solved, load_board, neighbor_head, num_colors, orientation,
     set_cell, strip_board,
@@ -85,9 +87,6 @@ impl Flow {
 }
 
 impl Game {
-    pub const ROWS: usize = 15;
-    pub const COLS: usize = 15;
-
     pub fn new(board_string: &str) -> Self {
         let mut board = load_board(board_string);
         strip_board(&mut board);

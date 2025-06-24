@@ -19,9 +19,9 @@ use crate::board::orientation;
 use crate::board::{Board, num_colors};
 use hsv::{self, hsv_to_rgb};
 
-pub const PIXEL_SCALE: u32 = 42;
-pub const PIXELS_PER_CELL: u32 = 3;
-const PPC: usize = 3;
+pub const PIXEL_SCALE: u32 = 20;
+pub const PIXELS_PER_CELL: u32 = 5;
+const PPC: usize = 5;
 
 pub struct Gfx {
     pub window: Window,
@@ -83,7 +83,8 @@ impl Gfx {
 
         let W = self.width as usize;
 
-        let white = &[255, 255, 255, 255];
+        let white = [255, 255, 255, 255];
+        let black = [0, 0, 0, 255];
         frame.fill(0);
 
         for i in 0..board.len() {
@@ -91,9 +92,6 @@ impl Gfx {
             match c {
                 Cell::Empty {} => {}
                 _ => {
-                    // let k = 7; // must be coprime to n_colors
-                    // let hue = (k * c.color() % n_colors) as f64 * 360.0 / n_colors as f64;
-                    // let rgb = hsv_to_rgb(hue, 0.7, 0.9);
                     let color;
                     if c.color() < 10 {
                         let hue = (c.color() % n_colors) as f64 * 30.0 as f64;
@@ -106,65 +104,67 @@ impl Gfx {
                         color = [decoded[0], decoded[1], decoded[2], 255];
                     }
 
-                    let topleft = ((i * PPC) / self.width as usize * PPC * self.width as usize
-                        + (i * PPC) % self.width as usize)
-                        * 4;
+                    let topleft = ((i * PPC) / W * PPC * W + (i * PPC) % W) * 4;
 
-                    frame[topleft..topleft + 12].copy_from_slice(&color.repeat(PPC));
-
-                    frame[topleft + (self.width as usize) * 4
-                        ..topleft + (self.width as usize) * 4 + 12]
-                        .copy_from_slice(&color.repeat(PPC));
-
-                    frame[topleft + (self.width as usize) * 2 * 4
-                        ..topleft + (self.width as usize) * 2 * 4 + 12]
-                        .copy_from_slice(&color.repeat(PPC));
-
-                    frame[topleft + 4 + (self.width as usize) * 4
-                        ..topleft + 4 + (self.width as usize) * 4 + 4]
-                        .copy_from_slice(white);
+                    for i in 0..PPC - 2 {
+                        frame[topleft + 4 + (W) * (i + 1) * 4
+                            ..topleft + (W) * (i + 1) * 4 + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
 
                     let orientation = orientation(board, i);
+                    if c.is_head() {
+                        frame[topleft..topleft + 4 * PPC].copy_from_slice(&color.repeat(PPC));
+
+                        for i in 0..PPC {
+                            frame[topleft + (W) * i * 4..topleft + (W) * i * 4 + 4 * PPC]
+                                .copy_from_slice(&color.repeat(PPC));
+                        }
+
+                        frame[topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4
+                            ..topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4 + 4]
+                            .copy_from_slice(&white);
+
+                        // if orientation == 0 {
+                        //     frame[topleft + 4 + (W) * 4..topleft + 4 + (W) * 4 + 4]
+                        //         .copy_from_slice(&color);
+                        //     frame[topleft + 4..topleft + 4 + 4].copy_from_slice(&black);
+                        //     frame[topleft + (W) * 4..topleft + (W) * 4 + 4].copy_from_slice(&black);
+                        //     frame[topleft + 4 + (W) * 2 * 4..topleft + 4 + (W) * 2 * 4 + 4]
+                        //         .copy_from_slice(&black);
+                        //     frame[topleft + 8 + (W) * 4..topleft + 8 + (W) * 4 + 4]
+                        //         .copy_from_slice(&black);
+                        // }
+                    }
+
                     if orientation & 1 == 1 {
-                        frame[topleft + 4..topleft + 4 + 4].copy_from_slice(white);
+                        frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
                     }
 
                     if orientation & 2 == 2 {
-                        frame[topleft + (self.width as usize) * 4
-                            ..topleft + (self.width as usize) * 4 + 4]
-                            .copy_from_slice(white);
+                        for i in 0..PPC - 2 {
+                            frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
                     }
 
                     if orientation & 4 == 4 {
-                        frame[topleft + 4 + (self.width as usize) * 2 * 4
-                            ..topleft + 4 + (self.width as usize) * 2 * 4 + 4]
-                            .copy_from_slice(white);
+                        frame[topleft + 4 + (W) * (PPC - 1) * 4
+                            ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
                     }
 
                     if orientation & 8 == 8 {
-                        frame[topleft + 8 + (self.width as usize) * 4
-                            ..topleft + 8 + (self.width as usize) * 4 + 4]
-                            .copy_from_slice(white);
-                    }
-
-                    if c.is_head() {
-                        frame[topleft..topleft + 12].copy_from_slice(&color.repeat(PPC));
-
-                        frame[topleft + (self.width as usize) * 4
-                            ..topleft + (self.width as usize) * 4 + 12]
-                            .copy_from_slice(&color.repeat(PPC));
-
-                        frame[topleft + (self.width as usize) * 2 * 4
-                            ..topleft + (self.width as usize) * 2 * 4 + 12]
-                            .copy_from_slice(&color.repeat(PPC));
-                        frame[topleft + 4 + (self.width as usize) * 4
-                            ..topleft + 4 + (self.width as usize) * 4 + 4]
-                            .copy_from_slice(white);
+                        for i in 0..PPC - 2 {
+                            frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
                     }
                 }
             }
         }
-        // frame[0..4].copy_from_slice(&[0, 255, 255, 255]);
     }
 }
 

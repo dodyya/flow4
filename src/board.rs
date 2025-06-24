@@ -1,7 +1,6 @@
+use crate::COLS;
+use crate::ROWS;
 use crate::game::Game;
-
-const ROWS: usize = Game::ROWS;
-const COLS: usize = Game::COLS;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cell {
