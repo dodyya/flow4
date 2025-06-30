@@ -1,8 +1,6 @@
-use crate::COLS;
-use crate::ROWS;
 use crate::board::{
-    Board, Cell, ind, is_legal, is_solved, load_board, neighbor_head, num_colors, orientation,
-    set_cell, strip_board,
+    Board, Cell, ind, is_legal, is_solved, load_board, neighbor_head, num_colors, set_cell,
+    strip_board,
 };
 
 pub struct Game {
@@ -14,7 +12,7 @@ pub struct Game {
 }
 
 #[derive(Debug, Clone)]
-struct Flow {
+pub struct Flow {
     pub cells: Vec<(usize, usize)>,
     complete: bool,
 }
@@ -194,7 +192,7 @@ impl Game {
             self.dragging = false;
         }
 
-        let neighbor_result = neighbor_head(self.board, row, col, self.color as u8);
+        let neighbor_result = neighbor_head(&self.board, row, col, self.color as u8);
         if neighbor_result.is_some()
             && !self.flows[self.color]
                 .cells
@@ -204,7 +202,6 @@ impl Game {
             self.flows[self.color].set_complete();
         }
         self.update_board();
-        // println!("{}", orientation(&self.board, row, col));
     }
 
     pub fn handle_right_click(&mut self) {

@@ -6,8 +6,13 @@ from io import BytesIO
 
 url = "https://flowfreesolutions.com/solution-pictures/flow/regular/flow-regular-"
 url="https://flowfreesolutions.com/solution-pictures/flow/rectangle/flow-rectangle-"
+url = "https://flowfreesolutions.com/solution-pictures/flow/7mania/flow-7mania-"
+url = "https://flowfreesolutions.com/solution-pictures/flow/8mania/flow-8mania-"
+url = "https://flowfreesolutions.com/solution-pictures/flow/9mania/flow-9mania-"
+url = "https://flowfreesolutions.com/solution-pictures/flow/10mania/flow-10mania-"
+mania_url = "https://flowfreesolutions.com/solution-pictures/flow/{dim}mania/flow-{dim}mania-"
 url_end = ".png"
-(cols, rows) = 12,14
+(cols, rows) = 9,9
 
 def steal_flow(url):
     response = requests.get(url)
@@ -60,9 +65,11 @@ def steal_flow(url):
 
 
 if __name__ == "__main__":
-    for i in range(121,151):
-        print(f"Stealing image {i}...")
-        flow = steal_flow(url + str(i) + url_end)
-        # Save string to new file
-        with open(f"flows/{cols}x{rows}_{i}.txt", "w") as f:
-            f.write(flow)
+    for dim in range(10,15):
+        rows = cols = dim
+        for i in range(1,151):
+            print(f"Stealing image {dim}/{i}...")
+            flow = steal_flow(f"https://flowfreesolutions.com/solution-pictures/flow/{dim}mania/flow-{dim}mania-{i}.png")
+            # Save string to new file
+            with open(f"flows/{dim}x{dim}_{i}.txt", "w") as f:
+                f.write(flow)

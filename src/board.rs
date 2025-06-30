@@ -1,6 +1,5 @@
 use crate::COLS;
 use crate::ROWS;
-use crate::game::Game;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cell {
@@ -71,7 +70,7 @@ pub fn inverse_ind(index: usize) -> (usize, usize) {
 }
 
 ///Returns a cell's 4 neighbors, padding out of bounds neighbors with Empty
-fn get_neighbors(board: Board, row: usize, col: usize) -> [Cell; 4] {
+fn neighbors_or_empty(board: &Board, row: usize, col: usize) -> [Cell; 4] {
     let mut out = [Cell::Empty; 4];
     if row > 0 {
         out[0] = board[ind(row - 1, col)];
@@ -91,7 +90,36 @@ fn get_neighbors(board: Board, row: usize, col: usize) -> [Cell; 4] {
     out
 }
 
-pub fn neighbor_head(board: Board, row: usize, col: usize, color: u8) -> Option<(usize, usize)> {
+///Returns a cell's 4 empty neighbors. Edges or nonempty are represented as None.
+pub fn empty_neighbors(board: &Board, row: usize, col: usize) -> [Option<(usize, usize)>; 4] {
+    let mut out = [None; 4];
+    if row > 0 {
+        if board[ind(row - 1, col)] == Cell::Empty {
+            out[0] = Some((row - 1, col));
+        }
+    }
+
+    if col > 0 {
+        if board[ind(row, col - 1)] == Cell::Empty {
+            out[1] = Some((row, col - 1));
+        }
+    }
+
+    if row < ROWS - 1 {
+        if board[ind(row + 1, col)] == Cell::Empty {
+            out[2] = Some((row + 1, col));
+        }
+    }
+
+    if col < COLS - 1 {
+        if board[ind(row, col + 1)] == Cell::Empty {
+            out[3] = Some((row, col + 1));
+        }
+    }
+    out
+}
+
+pub fn neighbor_head(board: &Board, row: usize, col: usize, color: u8) -> Option<(usize, usize)> {
     let target = Cell::Head { color };
     if row > 0 {
         if board[ind(row - 1, col)] == target {
@@ -119,10 +147,10 @@ pub fn neighbor_head(board: Board, row: usize, col: usize, color: u8) -> Option<
 //For graphics: Every single path cell can be drawn by describing the neighbors of the same color it has in the following way:
 //
 
-pub fn orientation(&board: &Board, index: usize) -> u8 {
+pub fn orientation(board: &Board, index: usize) -> u8 {
     let mut out = 0;
     let (row, col) = inverse_ind(index);
-    let neighbors = get_neighbors(board, row, col);
+    let neighbors = neighbors_or_empty(&board, row, col);
     let own_color = board[index].color();
     for i in 0..4 {
         if !neighbors[i].is_empty() && neighbors[i].color() == own_color {
@@ -138,12 +166,12 @@ pub fn is_solved(&board: &Board) -> bool {
             match board[ind(i, j)] {
                 Cell::Empty => return false,
                 Cell::Path { color } => {
-                    if num_neighbors_of_color(board, color, i, j) != 2 {
+                    if num_neighbors_of_color(&board, color, i, j) != 2 {
                         return false;
                     }
                 }
                 Cell::Head { color } => {
-                    if num_neighbors_of_color(board, color, i, j) != 1 {
+                    if num_neighbors_of_color(&board, color, i, j) != 1 {
                         return false;
                     }
                 }
@@ -160,13 +188,13 @@ pub fn is_legal(&board: &Board) -> bool {
             match board[ind(i, j)] {
                 Cell::Empty => {}
                 Cell::Path { color } => {
-                    let n = num_neighbors_of_color(board, color, i, j);
+                    let n = num_neighbors_of_color(&board, color, i, j);
                     if n > 2 || n == 0 {
                         return false;
                     }
                 }
                 Cell::Head { color } => {
-                    if num_neighbors_of_color(board, color, i, j) > 1 {
+                    if num_neighbors_of_color(&board, color, i, j) > 1 {
                         return false;
                     }
                 }
@@ -193,14 +221,16 @@ pub fn is_valid(&board: &Board) -> bool {
     seen_colors & 0x5555_5555_5555_5555 == 0
 }
 
-fn num_neighbors_of_color(board: Board, color: u8, row: usize, col: usize) -> u32 {
-    get_neighbors(board, row, col).iter().fold(0, |sum, c| {
-        if c != &Cell::Empty && color == c.color() {
-            sum + 1
-        } else {
-            sum
-        }
-    })
+fn num_neighbors_of_color(board: &Board, color: u8, row: usize, col: usize) -> u32 {
+    neighbors_or_empty(&board, row, col)
+        .iter()
+        .fold(0, |sum, c| {
+            if c != &Cell::Empty && color == c.color() {
+                sum + 1
+            } else {
+                sum
+            }
+        })
 }
 
 // fn is_impossible(b: Board) -> bool {}
@@ -225,6 +255,10 @@ pub fn load_board(board: &str) -> Board {
 
 pub fn set_cell(board: &mut Board, row: usize, col: usize, cell: Cell) {
     board[ind(row, col)] = cell;
+}
+
+pub fn add_path(board: &mut Board, row: usize, col: usize, color: u8) {
+    board[ind(row, col)] = Cell::Path { color };
 }
 
 pub fn strip_board(board: &mut Board) {

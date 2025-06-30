@@ -1,10 +1,7 @@
-use hex::decode_to_slice;
 use pixels::{Pixels, SurfaceTexture};
-use std::time::Instant;
 use winit::{
     dpi::PhysicalSize,
-    event::{Event, VirtualKeyCode, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::EventLoop,
     window::{Window, WindowBuilder},
 };
 
@@ -93,13 +90,13 @@ impl Gfx {
                 Cell::Empty {} => {}
                 _ => {
                     let color;
-                    if c.color() < 10 {
-                        let hue = (c.color() % n_colors) as f64 * 30.0 as f64;
+                    if c.color() < 5 {
+                        let hue = (c.color() % n_colors) as f64 * 72 as f64;
                         let rgb = hsv_to_rgb(hue, 1.0, 1.0);
                         color = [rgb.0, rgb.1, rgb.2, 255];
                     } else {
                         let mut decoded = [0; 3];
-                        hex::decode_to_slice(COLORS[c.color() as usize - 10], &mut decoded)
+                        hex::decode_to_slice(COLORS[(c.color() - 5) as usize], &mut decoded)
                             .expect("Decoding failed");
                         color = [decoded[0], decoded[1], decoded[2], 255];
                     }
@@ -121,20 +118,33 @@ impl Gfx {
                                 .copy_from_slice(&color.repeat(PPC));
                         }
 
-                        frame[topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4
-                            ..topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4 + 4]
-                            .copy_from_slice(&white);
+                        // frame[topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4
+                        //     ..topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4 + 4]
+                        //     .copy_from_slice(&white);
 
-                        // if orientation == 0 {
-                        //     frame[topleft + 4 + (W) * 4..topleft + 4 + (W) * 4 + 4]
-                        //         .copy_from_slice(&color);
-                        //     frame[topleft + 4..topleft + 4 + 4].copy_from_slice(&black);
-                        //     frame[topleft + (W) * 4..topleft + (W) * 4 + 4].copy_from_slice(&black);
-                        //     frame[topleft + 4 + (W) * 2 * 4..topleft + 4 + (W) * 2 * 4 + 4]
-                        //         .copy_from_slice(&black);
-                        //     frame[topleft + 8 + (W) * 4..topleft + 8 + (W) * 4 + 4]
-                        //         .copy_from_slice(&black);
-                        // }
+                        if orientation == 0 {
+                            for i in 0..PPC {
+                                frame[topleft + (W) * (i) * 4..topleft + (W) * (i) * 4 + 4 * (PPC)]
+                                    .copy_from_slice(&black.repeat(PPC));
+                            }
+
+                            frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+                            for i in 0..PPC - 2 {
+                                frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+
+                            frame[topleft + 4 + (W) * (PPC - 1) * 4
+                                ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+
+                            for i in 0..PPC - 2 {
+                                frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                    ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+                        }
                     }
 
                     if orientation & 1 == 1 {
