@@ -1,7 +1,5 @@
-use crate::board::{
-    Board, Cell, ind, is_legal, is_solved, load_board, neighbor_head, num_colors, set_cell,
-    strip_board,
-};
+use crate::board::{Board, Cell};
+use crate::{COLS, ROWS};
 
 pub struct Game {
     board: Board,
@@ -86,20 +84,21 @@ impl Flow {
 
 impl Game {
     pub fn new(board_string: &str) -> Self {
-        let mut board = load_board(board_string);
-        strip_board(&mut board);
+        let mut board = Board::load_board(board_string, ROWS, COLS);
+        board.strip();
+        let num_colors = board.num_colors();
 
         Game {
             board,
             dragging: false,
             color: 0,
             finished: false,
-            flows: vec![Flow::new(); num_colors(&board)],
+            flows: vec![Flow::new(); num_colors],
         }
     }
 
     pub fn clear_flows(&mut self) {
-        self.flows = vec![Flow::new(); num_colors(&self.board)];
+        self.flows = vec![Flow::new(); self.board.num_colors()];
     }
 
     pub fn get_board(&mut self) -> &Board {
@@ -111,20 +110,15 @@ impl Game {
     // }
 
     fn update_board(&mut self) {
-        strip_board(&mut self.board);
+        self.board.strip();
         for color in 0..self.flows.len() {
             for (row, col) in self.flows[color].cells.iter() {
-                if !Cell::is_head(&self.board[ind(*row, *col)]) {
-                    set_cell(
-                        &mut self.board,
-                        *row,
-                        *col,
-                        Cell::Path { color: color as u8 },
-                    );
+                if !Cell::is_head(&self.board[(*row, *col)]) {
+                    self.board[(*row, *col)] = Cell::Path { color: color as u8 };
                 }
             }
         }
-        if !is_legal(&self.board) {
+        if !self.board.is_legal() {
             self.flows[self.color].cells.clear();
             self.dragging = false;
             self.update_board();
@@ -136,7 +130,7 @@ impl Game {
     }
 
     pub fn update(&mut self) -> bool {
-        if !self.finished && is_solved(&self.board) {
+        if !self.finished && self.board.is_solved() {
             self.finished = true;
             return true; // Signal that we just won
         }
@@ -148,7 +142,7 @@ impl Game {
             return;
         }
 
-        let c = self.board[ind(row, col)];
+        let c = self.board[(row, col)];
         if !c.is_empty() {
             self.color = c.color() as usize;
             if c.is_head() {
@@ -170,7 +164,7 @@ impl Game {
             return;
         }
 
-        let cell = self.board[ind(row, col)];
+        let cell = self.board[(row, col)];
 
         if cell.is_head()
             && cell.color() == self.color as u8
@@ -192,7 +186,7 @@ impl Game {
             self.dragging = false;
         }
 
-        let neighbor_result = neighbor_head(&self.board, row, col, self.color as u8);
+        let neighbor_result = self.board.neighbor_head(row, col, self.color as u8);
         if neighbor_result.is_some()
             && !self.flows[self.color]
                 .cells
@@ -208,7 +202,7 @@ impl Game {
         if self.finished {
             return;
         }
-        strip_board(&mut self.board);
+        self.board.strip();
         self.clear_flows();
     }
 }

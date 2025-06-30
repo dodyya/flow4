@@ -1,4 +1,4 @@
-use crate::board::{Board, Cell, add_path, empty_neighbors, inverse_ind, is_solved, neighbor_head};
+use crate::board::{Board, Cell};
 
 // Timid solver only has one game state, and immediately fails when encountering any
 // decision (risk) it has to take.
@@ -50,7 +50,7 @@ impl Solver {
             if b[i].is_head() {
                 flows.push(Flow {
                     steps: vec![Step {
-                        position: inverse_ind(i),
+                        position: Board::inverse_ind(i),
                         color: b[i].color(),
                     }],
                     complete: false,
@@ -75,7 +75,7 @@ impl Solver {
     }
 
     pub fn moves_from(&self, c: &Step) -> Vec<Move> {
-        let slots = empty_neighbors(&self.board, c.position.0, c.position.1);
+        let slots = self.board.empty_neighbors(c.position.0, c.position.1);
         slots
             .iter()
             .filter(|result| result.is_some())
@@ -86,15 +86,15 @@ impl Solver {
             .collect()
     }
 
-    pub fn solve_board(&mut self) -> Board {
-        while !is_solved(&self.board) {
+    pub fn solve_board(mut self) -> Board {
+        while !self.board.is_solved() {
             self.solution_step();
         }
         self.board
     }
 
     pub fn solution_step(&mut self) {
-        if is_solved(&self.board) {
+        if self.board.is_solved() {
             return;
         }
         let move_result: Option<(Move, &Flow)> = self.forced_move();
@@ -108,7 +108,7 @@ impl Solver {
     }
 
     pub fn make(&mut self, m: Move) {
-        add_path(&mut self.board, m.position.0, m.position.1, m.color);
+        self.board.add_path(m.position.0, m.position.1, m.color);
 
         self.add_to_appropriate_flow(m);
     }

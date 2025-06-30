@@ -11,9 +11,8 @@ const COLORS: [&str; 24] = [
     "5a3200", "40bcab", "b49b00", "930000", "004e75", "4cb148",
 ];
 
+use crate::board::Board;
 use crate::board::Cell;
-use crate::board::orientation;
-use crate::board::{Board, num_colors};
 use hsv::{self, hsv_to_rgb};
 
 pub const PIXEL_SCALE: u32 = 20;
@@ -74,8 +73,8 @@ impl Gfx {
         self.window.request_redraw();
     }
 
-    pub fn flow4_display(&mut self, board: &Board) {
-        let n_colors = num_colors(board) as u8;
+    pub fn display(&mut self, board: &Board) {
+        let n_colors = board.num_colors() as u8;
         let frame = self.pixels.frame_mut();
 
         let W = self.width as usize;
@@ -109,7 +108,7 @@ impl Gfx {
                             .copy_from_slice(&color.repeat(PPC - 2));
                     }
 
-                    let orientation = orientation(board, i);
+                    let orientation = board.orientation(i);
                     if c.is_head() {
                         frame[topleft..topleft + 4 * PPC].copy_from_slice(&color.repeat(PPC));
 
