@@ -9,12 +9,6 @@ pub struct Move {
     color: u8,
 }
 
-#[derive(Copy, Clone, Debug)]
-struct Step {
-    position: (usize, usize),
-    color: u8,
-}
-
 fn adjacent(a: (usize, usize), b: (usize, usize)) -> bool {
     let (x1, y1) = (a.0 as isize, a.1 as isize);
     let (x2, y2) = (b.0 as isize, b.1 as isize);
@@ -29,17 +23,17 @@ fn adjacent(a: (usize, usize), b: (usize, usize)) -> bool {
 
 #[derive(Clone, Debug)]
 struct Flow {
-    steps: Vec<Step>,
+    steps: Vec<Move>,
     complete: bool,
 }
 
 impl Flow {
-    fn last(&self) -> Option<&Step> {
+    fn last(&self) -> Option<&Move> {
         self.steps.last()
     }
 }
 pub struct Solver {
-    pub flows: Vec<Flow>,
+    flows: Vec<Flow>,
     pub board: Board,
 }
 
@@ -49,7 +43,7 @@ impl Solver {
         for i in 0..b.len() {
             if b[i].is_head() {
                 flows.push(Flow {
-                    steps: vec![Step {
+                    steps: vec![Move {
                         position: Board::inverse_ind(i),
                         color: b[i].color(),
                     }],
@@ -63,7 +57,7 @@ impl Solver {
         }
     }
 
-    pub fn forced_move(&self) -> Option<(Move, &Flow)> {
+    fn forced_move(&self) -> Option<(Move, &Flow)> {
         for f in &self.flows {
             let moves: Vec<Move> = self.moves_from(&f.last().unwrap());
             // println!("{:?}", f);
@@ -74,7 +68,7 @@ impl Solver {
         return None;
     }
 
-    pub fn moves_from(&self, c: &Step) -> Vec<Move> {
+    pub fn moves_from(&self, c: &Move) -> Vec<Move> {
         let slots = self.board.empty_neighbors(c.position.0, c.position.1);
         slots
             .iter()
@@ -119,7 +113,7 @@ impl Solver {
                 && adjacent(flow.last().unwrap().position, m.position)
         });
         if let Some(flow) = flow {
-            flow.steps.push(Step {
+            flow.steps.push(Move {
                 position: m.position,
                 color: m.color,
             });
