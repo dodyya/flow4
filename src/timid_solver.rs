@@ -1,4 +1,4 @@
-use crate::board::{Board, Cell};
+use crate::board::Board;
 
 // Timid solver only has one game state, and immediately fails when encountering any
 // decision (risk) it has to take.

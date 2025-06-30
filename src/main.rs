@@ -4,15 +4,12 @@ mod gfx;
 mod timid_solver;
 use crate::board::Board;
 
-use std::cmp::min;
 use std::fs;
-use std::time::{Duration, Instant};
 use winit::{
-    event::{ElementState, Event, MouseButton, WindowEvent},
+    event::{Event, WindowEvent},
     event_loop::ControlFlow,
 };
 
-use std::thread;
 const ROWS: usize = 5;
 const COLS: usize = 5;
 const NUM_PUZZLES: u32 = 30;
@@ -41,7 +38,7 @@ fn main() {
             Event::MainEventsCleared => {
                 solver.solution_step();
                 gfx.display(&solver.get_board());
-                &solver.get_board().print();
+                solver.get_board().print();
                 gfx.render();
 
                 if solver.done() || solver.failed() {
