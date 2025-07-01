@@ -42,8 +42,8 @@ impl Cell {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Board {
-    rows: usize,
-    cols: usize,
+    pub rows: usize,
+    pub cols: usize,
     cells: Box<[Cell]>,
 }
 
@@ -220,6 +220,10 @@ impl Board {
         seen_colors & 0x5555_5555_5555_5555 == 0
     }
 
+    pub fn is_full(&self) -> bool {
+        self.cells.iter().all(|cell| cell != &Cell::Empty)
+    }
+
     fn num_neighbors_of_color(&self, color: u8, row: usize, col: usize) -> u32 {
         self.neighbors_or_empty((row, col))
             .iter()
@@ -285,6 +289,18 @@ impl Board {
             }
             println!();
         }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Cell> {
+        self.cells.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Cell> {
+        self.cells.iter_mut()
+    }
+
+    pub fn into_iter(self) -> impl Iterator<Item = Cell> {
+        self.cells.into_iter()
     }
 }
 

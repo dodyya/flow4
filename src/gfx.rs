@@ -15,7 +15,7 @@ use crate::board::Board;
 use crate::board::Cell;
 use hsv::{self, hsv_to_rgb};
 
-pub const PIXEL_SCALE: u32 = 20;
+pub const PIXEL_SCALE: u32 = 40;
 pub const PIXELS_PER_CELL: u32 = 5;
 const PPC: usize = 5;
 
@@ -99,6 +99,190 @@ impl Gfx {
                             .expect("Decoding failed");
                         color = [decoded[0], decoded[1], decoded[2], 255];
                     }
+
+                    let topleft = ((i * PPC) / W * PPC * W + (i * PPC) % W) * 4;
+
+                    for i in 0..PPC - 2 {
+                        frame[topleft + 4 + (W) * (i + 1) * 4
+                            ..topleft + (W) * (i + 1) * 4 + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    let orientation = board.orientation(i);
+                    if c.is_head() {
+                        frame[topleft..topleft + 4 * PPC].copy_from_slice(&color.repeat(PPC));
+
+                        for i in 0..PPC {
+                            frame[topleft + (W) * i * 4..topleft + (W) * i * 4 + 4 * PPC]
+                                .copy_from_slice(&color.repeat(PPC));
+                        }
+
+                        // frame[topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4
+                        //     ..topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4 + 4]
+                        //     .copy_from_slice(&white);
+
+                        if orientation == 0 {
+                            for i in 0..PPC {
+                                frame[topleft + (W) * (i) * 4..topleft + (W) * (i) * 4 + 4 * (PPC)]
+                                    .copy_from_slice(&black.repeat(PPC));
+                            }
+
+                            frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+                            for i in 0..PPC - 2 {
+                                frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+
+                            frame[topleft + 4 + (W) * (PPC - 1) * 4
+                                ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+
+                            for i in 0..PPC - 2 {
+                                frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                    ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+                        }
+                    }
+
+                    if orientation & 1 == 1 {
+                        frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    if orientation & 2 == 2 {
+                        for i in 0..PPC - 2 {
+                            frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
+                    }
+
+                    if orientation & 4 == 4 {
+                        frame[topleft + 4 + (W) * (PPC - 1) * 4
+                            ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    if orientation & 8 == 8 {
+                        for i in 0..PPC - 2 {
+                            frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn success_display(&mut self, board: &Board) {
+        let frame = self.pixels.frame_mut();
+
+        let W = self.width as usize;
+
+        let white = [255, 255, 255, 255];
+        let black = [0, 0, 0, 255];
+        frame.fill(0);
+
+        for i in 0..board.len() {
+            let c = board[i];
+            match c {
+                Cell::Empty {} => {}
+                _ => {
+                    let color = [255, 255, 255, 255];
+
+                    let topleft = ((i * PPC) / W * PPC * W + (i * PPC) % W) * 4;
+
+                    for i in 0..PPC - 2 {
+                        frame[topleft + 4 + (W) * (i + 1) * 4
+                            ..topleft + (W) * (i + 1) * 4 + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    let orientation = board.orientation(i);
+                    if c.is_head() {
+                        frame[topleft..topleft + 4 * PPC].copy_from_slice(&color.repeat(PPC));
+
+                        for i in 0..PPC {
+                            frame[topleft + (W) * i * 4..topleft + (W) * i * 4 + 4 * PPC]
+                                .copy_from_slice(&color.repeat(PPC));
+                        }
+
+                        // frame[topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4
+                        //     ..topleft + (PPC / 2) * 4 + (W) * (PPC / 2) * 4 + 4]
+                        //     .copy_from_slice(&white);
+
+                        if orientation == 0 {
+                            for i in 0..PPC {
+                                frame[topleft + (W) * (i) * 4..topleft + (W) * (i) * 4 + 4 * (PPC)]
+                                    .copy_from_slice(&black.repeat(PPC));
+                            }
+
+                            frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+                            for i in 0..PPC - 2 {
+                                frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+
+                            frame[topleft + 4 + (W) * (PPC - 1) * 4
+                                ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                                .copy_from_slice(&color.repeat(PPC - 2));
+
+                            for i in 0..PPC - 2 {
+                                frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                    ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                    .copy_from_slice(&color);
+                            }
+                        }
+                    }
+
+                    if orientation & 1 == 1 {
+                        frame[topleft + 4..topleft + 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    if orientation & 2 == 2 {
+                        for i in 0..PPC - 2 {
+                            frame[topleft + (W) * (i + 1) * 4..topleft + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
+                    }
+
+                    if orientation & 4 == 4 {
+                        frame[topleft + 4 + (W) * (PPC - 1) * 4
+                            ..topleft + 4 + (W) * (PPC - 1) * 4 + 4 * (PPC - 2)]
+                            .copy_from_slice(&color.repeat(PPC - 2));
+                    }
+
+                    if orientation & 8 == 8 {
+                        for i in 0..PPC - 2 {
+                            frame[topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4
+                                ..topleft + 4 * (PPC - 1) + (W) * (i + 1) * 4 + 4]
+                                .copy_from_slice(&color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn fail_display(&mut self, board: &Board) {
+        let frame = self.pixels.frame_mut();
+
+        let W = self.width as usize;
+
+        let white = [255, 255, 255, 255];
+        let black = [0, 0, 0, 255];
+        frame.fill(0);
+
+        for i in 0..board.len() {
+            let c = board[i];
+            match c {
+                Cell::Empty {} => {}
+                _ => {
+                    let color = [128, 0, 0, 255];
 
                     let topleft = ((i * PPC) / W * PPC * W + (i * PPC) % W) * 4;
 

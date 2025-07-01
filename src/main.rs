@@ -3,8 +3,13 @@
 mod board;
 mod game;
 mod gfx;
-mod timid_solver;
+mod solver;
+mod solver_stack;
+
 use crate::board::Board;
+use crate::solver_stack::SolverStack;
+use std::thread;
+use std::time::Duration;
 
 use std::fs;
 use winit::{
@@ -12,25 +17,25 @@ use winit::{
     event_loop::ControlFlow,
 };
 
-const ROWS: usize = 5;
-const COLS: usize = 5;
-const NUM_PUZZLES: u32 = 30;
+const ROWS: usize = 8;
+const COLS: usize = 8;
+const NUM_PUZZLES: u32 = 150;
 
 const SOLVING: bool = true;
 
-fn initialize(n: u32) -> timid_solver::Solver {
+fn initialize(n: u32) -> solver_stack::SolverStack {
     let file_string = format!("flows/{}x{}_{}.txt", COLS, ROWS, n);
     let board_string: String = fs::read_to_string(file_string).unwrap();
     let mut board = Board::load_board(&board_string, ROWS, COLS);
     board.strip();
-    timid_solver::Solver::new(&board)
+    solver_stack::SolverStack::new(solver::Solver::new(&board))
 }
 
 fn main() {
     let mut n = 1;
 
     let mut solved = 0;
-    let mut solver = initialize(n);
+    let mut solver: SolverStack = initialize(n);
     let (mut gfx, event_loop) = gfx::Gfx::new(COLS as u32, ROWS as u32);
 
     event_loop.run(move |event, _, control_flow| {
@@ -38,28 +43,56 @@ fn main() {
 
         match event {
             Event::MainEventsCleared => {
-                solver.solution_step();
+                // gfx.display(&Board::load_board(
+                //     "dddDBb
+                // dB..Cb
+                // d.A..b
+                // dbbc.b
+                // dAbCbb
+                // dDbbb.",
+                //     ROWS,
+                //     COLS,
+                // ));
+                solver.step();
                 gfx.display(&solver.get_board());
-                solver.get_board().print();
+                // print!("{}{}", 27 as char, 13 as char);
+                // println!("{:?}", solver.failed());
+                // solver.get_board().print();
                 gfx.render();
 
                 if solver.done() || solver.failed() {
+                    // println!("Moving on!");
                     if !solver.failed() {
+                        gfx.success_display(&solver.get_board());
+                        gfx.render();
+                        thread::sleep(Duration::from_millis(100));
                         solved += 1;
                     } else {
-                        *control_flow = ControlFlow::Wait;
+                        // *control_flow = ControlFlow::Wait;
+                        gfx.fail_display(&solver.get_board());
+                        gfx.render();
+                        thread::sleep(Duration::from_millis(500));
 
-                        return;
+                        // return;
                     }
                     n += 1;
                     if n > NUM_PUZZLES {
                         *control_flow = ControlFlow::Wait;
+                        // println!("All puzzles solved");
                         return;
                     }
                     solver = initialize(n);
-                    gfx.window.set_title(&format!("{}/{}", solved, n));
+                    // println!("Initialized {}", n);
+                    gfx.window.set_title(&format!(
+                        "{}x{} level {}          Accuracy:{}/{}",
+                        COLS,
+                        ROWS,
+                        n,
+                        solved,
+                        n - 1
+                    ));
                 }
-                // thread::sleep(Duration::from_millis(200));
+                // thread::sleep(Duration::from_millis(500));
             }
 
             Event::WindowEvent { event, .. } => match event {
