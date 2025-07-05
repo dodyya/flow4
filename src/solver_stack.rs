@@ -42,7 +42,7 @@ impl SolverStack {
         }
     }
 
-    pub(crate) fn get_board(&self) -> crate::board::Board {
+    pub(crate) fn get_board(&self) -> &crate::board::Board {
         self.current.get_board()
     }
 

@@ -1,8 +1,5 @@
 use crate::board::Board;
 
-// Timid solver only has one game state, and immediately fails when encountering any
-// decision (risk) it has to take.
-
 fn adjacent(a: Coord, b: Coord) -> bool {
     let (x1, y1) = (a.0 as isize, a.1 as isize);
     let (x2, y2) = (b.0 as isize, b.1 as isize);
@@ -238,7 +235,7 @@ impl Solver {
             || self.some_pocket()
     }
 
-    pub fn get_board(&self) -> Board {
-        self.board.clone()
+    pub fn get_board(&self) -> &Board {
+        &self.board
     }
 }

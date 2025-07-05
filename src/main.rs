@@ -43,21 +43,9 @@ fn main() {
 
         match event {
             Event::MainEventsCleared => {
-                // gfx.display(&Board::load_board(
-                //     "dddDBb
-                // dB..Cb
-                // d.A..b
-                // dbbc.b
-                // dAbCbb
-                // dDbbb.",
-                //     ROWS,
-                //     COLS,
-                // ));
                 solver.step();
                 gfx.display(&solver.get_board());
-                // print!("{}{}", 27 as char, 13 as char);
-                // println!("{:?}", solver.failed());
-                // solver.get_board().print();
+
                 gfx.render();
 
                 if solver.done() || solver.failed() {
@@ -69,20 +57,18 @@ fn main() {
                         solved += 1;
                     } else {
                         // *control_flow = ControlFlow::Wait;
-                        gfx.fail_display(&solver.get_board());
+                        gfx.fail_display(solver.get_board());
                         gfx.render();
                         thread::sleep(Duration::from_millis(500));
-
-                        // return;
                     }
                     n += 1;
                     if n > NUM_PUZZLES {
                         *control_flow = ControlFlow::Wait;
-                        // println!("All puzzles solved");
+
                         return;
                     }
                     solver = initialize(n);
-                    // println!("Initialized {}", n);
+
                     gfx.window.set_title(&format!(
                         "{}x{} level {}          Accuracy:{}/{}",
                         COLS,
