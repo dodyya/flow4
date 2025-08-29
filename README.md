@@ -1,5 +1,8 @@
 # Flow4 - Interactive Flow Free Puzzle Solver and Player
 
+<img width="808" height="825" alt="image" src="https://github.com/user-attachments/assets/7ae65d5e-35d6-43a2-b64d-36333352b1a8" />
+
+
 Flow4 is a comprehensive Flow Free puzzle implementation written in Rust, featuring both an interactive game interface and an advanced constraint satisfaction problem (CSP) solver. The project combines game development, algorithmic puzzle solving, and data acquisition through web scraping.
 
 ## Overview
