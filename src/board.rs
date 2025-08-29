@@ -1,7 +1,10 @@
+use std::io;
 use std::ops::{Index, IndexMut};
 
 use crate::COLS;
 use crate::ROWS;
+use colored::ColoredString;
+use colored::Colorize;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cell {
@@ -277,18 +280,60 @@ impl Board {
         self.rows * self.cols
     }
 
+    const COLORS: &[(u8, u8, u8)] = &[
+        (255, 0, 0),     // Red
+        (0, 255, 0),     // Lime
+        (0, 0, 255),     // Blue
+        (255, 255, 0),   // Yellow
+        (0, 255, 255),   // Cyan
+        (255, 0, 255),   // Magenta
+        (255, 165, 0),   // Orange
+        (128, 0, 128),   // Purple
+        (0, 128, 128),   // Teal
+        (128, 128, 0),   // Olive
+        (0, 0, 128),     // Navy
+        (139, 69, 19),   // SaddleBrown
+        (255, 192, 203), // Pink
+        (173, 255, 47),  // GreenYellow
+        (70, 130, 180),  // SteelBlue
+        (210, 105, 30),  // Chocolate
+        (154, 205, 50),  // YellowGreen
+        (255, 20, 147),  // DeepPink
+        (186, 85, 211),  // MediumOrchid
+        (60, 179, 113),  // MediumSeaGreen
+        (72, 61, 139),   // DarkSlateBlue
+        (0, 206, 209),   // DarkTurquoise
+        (244, 164, 96),  // SandyBrown
+        (0, 100, 0),     // DarkGreen
+        (199, 21, 133),  // MediumVioletRed
+        (112, 128, 144), // SlateGray
+    ];
+
     pub fn print(&self) {
+        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        let mut out = String::new();
         for i in 0..self.rows {
             for j in 0..self.cols {
                 let c = match self[(i, j)] {
-                    Cell::Empty => '.',
-                    Cell::Path { color } => (color + b'a') as char,
-                    Cell::Head { color } => (color + b'A') as char,
+                    Cell::Empty => ColoredString::from("."),
+                    Cell::Path { color } => {
+                        let rgb = Self::COLORS[color as usize];
+                        ((color + b'a') as char)
+                            .encode_utf8(&mut [0; 4])
+                            .on_truecolor(rgb.0, rgb.1, rgb.2)
+                    }
+                    Cell::Head { color } => {
+                        let rgb = Self::COLORS[color as usize];
+                        ((color + b'A') as char)
+                            .encode_utf8(&mut [0; 4])
+                            .on_truecolor(rgb.0, rgb.1, rgb.2)
+                    }
                 };
-                print!("{}", c);
+                out.push_str(&c.to_string());
             }
-            println!();
+            out.push('\n');
         }
+        print!("{}", out);
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Cell> {

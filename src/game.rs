@@ -157,6 +157,7 @@ impl Game {
 
     pub fn handle_mouse_release(&mut self) {
         self.dragging = false;
+        self.update();
     }
 
     pub fn handle_mouse_move(&mut self, row: usize, col: usize) {

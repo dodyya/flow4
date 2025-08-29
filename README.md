@@ -29,7 +29,7 @@ Run the interactive game with: `cargo run --release`
 The game uses a modular architecture with separate concerns:
 
 - **Board System**: Grid-based representation using enum-based cells (Empty, Path, Head) with efficient indexing and neighbor detection
-- **Flow Management**: Dynamic flow tracking with path validation, completion detection, and intelligent cutting/extension logic  
+- **Flow Management**: Dynamic flow tracking with path validation, completion detection, and intelligent cutting/extension logic
 - **Interactive Controls**: Real-time mouse input handling with grid coordinate translation and drag state management
 - **Visual Feedback**: HSV-based color generation ensuring distinct colors for up to 26 different flows
 
@@ -45,14 +45,16 @@ The solver implements a sophisticated constraint satisfaction approach:
 ### Puzzle Representation
 
 Puzzles use a compact text format where:
+
 - Uppercase letters represent colored endpoints (heads)
 - Lowercase letters represent path segments of the same color
 - Each color is mapped to consecutive letters (A/a, B/b, C/c, etc.)
 
 Example 5x5 puzzle:
+
 ```
 DdBCA
-Adbca  
+Adbca
 adBca
 adDCa
 aaaaa
@@ -105,6 +107,7 @@ The project leverages several key Rust crates:
 - `rand` for puzzle shuffling and testing
 
 Python dependencies include:
+
 - `PIL` for image processing and manipulation
 - `numpy` for efficient array operations
 - `requests` for web scraping and HTTP operations
@@ -112,12 +115,14 @@ Python dependencies include:
 ## Usage Examples
 
 ### Interactive Play
+
 ```bash
 # Start the interactive game
 cargo run --release
 ```
 
 ### Solver Benchmarking
+
 ```bash
 # Uncomment solver loop in main.rs for batch solving
 # Reports solve rate and performance metrics
@@ -125,41 +130,12 @@ cargo run --release
 ```
 
 ### Data Collection
+
 ```python
 # Download puzzle sets for specific grid sizes
 python src/flow_stealer.py
 # Generates puzzle files in flows/ directory
 ```
-
-## Project Structure
-
-- `src/main.rs` - Application entry point and event handling
-- `src/game.rs` - Interactive game logic and user input processing  
-- `src/board.rs` - Core grid representation and validation
-- `src/solver.rs` - CSP solver with backtracking and constraint propagation
-- `src/solver_stack.rs` - Stack-based solver state management
-- `src/gfx.rs` - Graphics rendering and visual presentation
-- `src/flow_stealer.py` - Web scraping and data acquisition
-- `flows/` - Puzzle dataset (1,500+ instances across multiple grid sizes)
-
-## Algorithm Complexity
-
-The solver demonstrates several algorithmic insights:
-
-- **Time Complexity**: O(b^d) where b is branching factor and d is solution depth, with significant pruning through constraint propagation
-- **Space Complexity**: O(d) for the search stack, with efficient state representation
-- **Heuristic Effectiveness**: Forced move detection reduces search space by ~60% on average puzzles
-
-## Educational Value
-
-This project demonstrates advanced concepts in:
-
-- **Constraint Satisfaction Problems**: Backtracking, constraint propagation, heuristic search
-- **Game Development**: Real-time input handling, graphics programming, state management
-- **Data Processing**: Web scraping, image analysis, format conversion
-- **Algorithm Design**: Search optimization, pruning strategies, performance analysis
-
-The combination of interactive gameplay and automated solving provides insights into both human-computer interaction and computational problem-solving approaches.
 
 ## Future Enhancements
 
@@ -173,4 +149,5 @@ Potential improvements include:
 
 ## Sources/Inspiration
 
-Puzzle data sourced from FlowFreeSolutions.com with automated scraping pipeline. Solver techniques inspired by classical CSP literature and modern game AI approaches.
+Puzzle data sourced from FlowFreeSolutions.com with automated scraping pipeline. Solver techniques inspired by: https://mzucker.github.io/2016/08/28/flow-solver.html
+Granted, my solver techniques were more rudimentary, as I did not study search-based planners in grad school.
